@@ -33,6 +33,10 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
+    <Compile Include="GVLs\PARAMETER\Testing_DB.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
     <Compile Include="GVLs\PARAMETER\TRIAL.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
