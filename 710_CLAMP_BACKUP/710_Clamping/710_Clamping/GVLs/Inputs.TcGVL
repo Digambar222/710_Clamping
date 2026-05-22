@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <GVL Name="Inputs" Id="{35b2b40d-c92a-47ef-955c-bdfeaac48185}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+
+
+
+	i_CC1_Clamp_3_Sensor_HP : BOOL;
+	i_CC1_Clamp_3_Sensor_WP : BOOL;
+	i_CC1_Clamp_2_Sensor_HP : BOOL;
+	i_CC1_Clamp_2_Sensor_WP : BOOL;
+	i_CC1_Clamp_1_Sensor_HP : BOOL;
+	i_CC1_Clamp_1_Sensor_WP : BOOL;
+	i_CC6_Clamp_1_Sensor_HP : BOOL;
+	i_CC6_Clamp_1_Sensor_WP : BOOL;
+	i_CC4_Clamp_3_Sensor_HP : BOOL;
+	i_CC4_Clamp_3_Sensor_WP : BOOL;
+	i_PART_CONTROL_B13      : BOOL;
+	i_PART_CONTROL_B27      : BOOL;
+	i_PART_CONTROL_B14      : BOOL;
+	i_PART_CONTROL_B28      : BOOL;
+	i_CC4_Clamp_2_Sensor_HP : BOOL;
+	i_CC4_Clamp_2_Sensor_WP : BOOL;
+	i_CC4_Clamp_1_Sensor_HP : BOOL;
+	i_CC4_Clamp_1_Sensor_WP : BOOL;
+	i_CC2_Clamp_3_Sensor_HP : BOOL;
+	i_CC2_Clamp_3_Sensor_WP : BOOL;
+	i_PART_CONTROL_B12      : BOOL;
+	i_PART_CONTROL_B26      : BOOL;
+	i_PART_CONTROL_B11      : BOOL;
+	i_PART_CONTROL_B25      : BOOL;
+	i_PART_CONTROL_B10      : BOOL;
+	i_PART_CONTROL_B24      : BOOL;
+	i_CC3_Clamp_3_Sensor_HP : BOOL;
+	i_CC3_Clamp_3_Sensor_WP : BOOL;
+	i_CC3_Clamp_2_Sensor_HP : BOOL;
+	i_CC3_Clamp_2_Sensor_WP : BOOL;
+	i_CC3_Clamp_1_Sensor_HP : BOOL;
+	i_CC3_Clamp_1_Sensor_WP : BOOL;
+	i_PART_CONTROL_B7       : BOOL;
+	i_PART_CONTROL_B21      : BOOL;
+	i_PART_CONTROL_B6       : BOOL;
+	i_PART_CONTROL_B20      : BOOL;
+	i_PART_CONTROL_B5       : BOOL;
+	i_PART_CONTROL_B19      : BOOL;
+	i_PART_CONTROL_B4       : BOOL;
+	i_PART_CONTROL_B18      : BOOL;
+	i_PART_CONTROL_B3       : BOOL;
+	i_PART_CONTROL_B17      : BOOL;
+	i_PART_CONTROL_B2       : BOOL;
+	i_PART_CONTROL_B16      : BOOL;
+	i_CC2_Clamp_2_Sensor_HP : BOOL;
+	i_CC2_Clamp_2_Sensor_WP : BOOL;
+	i_CC2_Clamp_1_Sensor_HP : BOOL;
+	i_CC2_Clamp_1_Sensor_WP : BOOL;
+	i_PART_CONTROL_B9       : BOOL;
+	i_PART_CONTROL_B23      : BOOL;
+	i_PART_CONTROL_B8       : BOOL;
+	i_PART_CONTROL_B22      : BOOL;
+	i_CC5_Clamp_1_Sensor_HP : BOOL;
+	i_CC5_Clamp_1_Sensor_WP : BOOL;
+	i_PART_CONTROL_B1       : BOOL;
+	i_PART_CONTROL_B15      : BOOL;
+	i_Reset_PB              : BOOL;
+	i_OPERATE_START_PB      : BOOL;
+	i_CYCLE_START_PB        : BOOL;
+    i_STOP_PB               : BOOL;
+	//TT SENSOR
+	i_1st_TT_Pos             : BOOL;
+	i_2nd_TT_Pos             : BOOL;
+	i_Drive_1_Ready         : BOOL;
+	// TRUNION
+	i_Drive_1_TT_Ready      : BOOL;
+	i_Trunion_1st_Pos       : BOOL;
+	i_Trunion_2nd_Pos       : BOOL;
+	// ROLLER DOOR
+	i_ROLL_DR_1_TT_Ready    : BOOL;
+	i_ROLL_DR_Open_Pos_LS   : BOOL;
+	i_ROLL_DR_Close_Pos_LS  : BOOL;
+	//ROBOT_WELD
+	Robot_Ready             : BOOL;
+	Robot_Busy              : BOOL;
+	Robot_Complete          : BOOL;
+	Robot_Fault             : BOOL;
+	PROGRAM_NUMBER          : INT;
+	 //MH_ROBOT
+	
+	MH_Robot_Ready             : BOOL;
+	MH_Robot_Busy              : BOOL;
+	MH_Robot_Complete          : BOOL;
+	MH_Robot_Fault             : BOOL;
+	MH_PROGRAM_NUMBER          : INT;
+	
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

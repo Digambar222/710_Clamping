@@ -1,0 +1,229 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="TRUNION_FB" Id="{ea928099-25bd-43e2-8512-a8d99d68cfc5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TRUNION_FB
+VAR_INPUT
+	Drive_Ready : BOOL;
+    Home_LS         : BOOL;
+    Work_LS         : BOOL;
+
+    Auto_Mode       : BOOL;
+    Manual_Mode     : BOOL;
+
+    Auto_Fwd_CMD    : BOOL;
+    Auto_Rev_CMD    : BOOL;
+
+    Man_Fwd_PB      : BOOL;
+    Man_Rev_PB      : BOOL;
+
+    Clamp_OK        : BOOL;
+
+    Reset_Fault     : BOOL;
+
+END_VAR
+VAR_OUTPUT
+	ENABLE : BOOL;
+	Motor_Fwd       : BOOL;
+    Motor_Rev       : BOOL;
+END_VAR
+VAR
+	State           : INT := 0;
+	// Timer
+    T_Move          : TON;
+    // Status
+    Busy            : BOOL;
+    At_Home         : BOOL;
+    At_Work         : BOOL;
+    Fault           : BOOL;
+    // Alarms
+    Alarm_MoveTimeout : BOOL;
+    Alarm_SensorFault : BOOL;
+    Alarm_ClampMissing: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// SENSOR VALIDATION
+// --------------------------------------
+(*IF NOT Drive_Ready AND Home_LS AND Work_LS THEN
+    Alarm_SensorFault := TRUE;
+    Fault := TRUE;
+    State := 99;
+END_IF;*)
+
+
+// --------------------------------------
+// AUTO MODE
+// --------------------------------------
+IF Auto_Mode THEN
+
+    CASE State OF
+
+        // ----------------------------------
+        // HOME POSITION
+        // ----------------------------------
+        0:
+            At_Home := TRUE;
+            At_Work := FALSE;
+            Busy := FALSE;
+
+            IF Auto_Fwd_CMD THEN
+				   // Clamp check before motion
+                IF Clamp_OK THEN
+                    State := 1;
+                ELSE
+                    Alarm_ClampMissing := TRUE;
+                    Fault := TRUE;
+                    State := 99;
+                END_IF;
+
+            END_IF;
+
+
+        // ----------------------------------
+        // MOVING FORWARD
+        // ----------------------------------
+		1:
+            Busy := TRUE;
+
+            Motor_Fwd := TRUE;
+            Motor_Rev := FALSE;
+
+            T_Move(IN := TRUE, PT := T#8S);
+
+            IF Work_LS THEN
+
+                Motor_Fwd := FALSE;
+                T_Move(IN := FALSE);
+
+                At_Home := FALSE;
+                At_Work := TRUE;
+                Busy := FALSE;
+
+                State := 2;
+
+            ELSIF T_Move.Q THEN
+
+                Alarm_MoveTimeout := TRUE;
+                Fault := TRUE;
+                State := 99;
+			END_IF;
+			 // ----------------------------------
+        // WORK POSITION
+        // ----------------------------------
+        2:
+            IF Auto_Rev_CMD THEN
+                State := 3;
+            END_IF;
+
+
+        // ----------------------------------
+        // MOVING HOME
+        // ----------------------------------
+        3:
+            Busy := TRUE;
+
+            Motor_Fwd := FALSE;
+            Motor_Rev := TRUE;
+
+            T_Move(IN := TRUE, PT := T#8S);
+			 IF Home_LS THEN
+
+                Motor_Rev := FALSE;
+                T_Move(IN := FALSE);
+
+                At_Home := TRUE;
+                At_Work := FALSE;
+                Busy := FALSE;
+
+                State := 0;
+
+            ELSIF T_Move.Q THEN
+
+                Alarm_MoveTimeout := TRUE;
+                Fault := TRUE;
+                State := 99;
+
+            END_IF;
+
+  // ----------------------------------
+        // FAULT STATE
+        // ----------------------------------
+        99:
+            Motor_Fwd := FALSE;
+            Motor_Rev := FALSE;
+            Busy := FALSE;
+
+            IF Reset_Fault THEN
+
+                Alarm_MoveTimeout := FALSE;
+                Alarm_SensorFault := FALSE;
+                Alarm_ClampMissing := FALSE;
+
+                Fault := FALSE;
+
+                State := 0;
+
+            END_IF;
+
+    END_CASE;
+
+END_IF;
+// --------------------------------------
+// MANUAL MODE
+// --------------------------------------
+IF Manual_Mode AND NOT Auto_Mode THEN
+     State := 0;
+    // Forward Jog
+    IF Man_Fwd_PB AND NOT Work_LS THEN
+
+        IF Clamp_OK THEN
+			
+            Motor_Fwd := TRUE;
+        ELSE
+            Alarm_ClampMissing := TRUE;
+        END_IF;
+
+    ELSE
+        Motor_Fwd := FALSE;
+    END_IF;
+
+
+    // Reverse Jog
+    IF Man_Rev_PB AND NOT Home_LS THEN
+        Motor_Rev := TRUE;
+    ELSE
+        Motor_Rev := FALSE;
+    END_IF;
+
+END_IF;
+// --------------------------------------
+// SAFETY INTERLOCK
+// --------------------------------------
+IF Motor_Fwd AND Motor_Rev THEN
+    Motor_Fwd := FALSE;
+    Motor_Rev := FALSE;
+END_IF;
+			]]></ST>
+    </Implementation>
+    <LineIds Name="TRUNION_FB">
+      <LineId Id="42" Count="23" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="68" Count="13" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="83" Count="22" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="108" Count="17" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="127" Count="40" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="169" Count="8" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="178" Count="16" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="196" Count="5" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="106" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

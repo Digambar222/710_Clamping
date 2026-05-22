@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Turntable" Id="{cecc1672-fbef-4cce-9a27-ece6cc5cc2a3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC Turntable
+VAR_INPUT
+  
+    bStartCW        : BOOL;     // Command: Move Clockwise
+    bStartCCW       : BOOL;     // Command: Move Counter-Clockwise
+    bPosSensor      : BOOL;     // Index sensor (detects the 4 positions)
+     
+  
+END_VAR
+VAR_OUTPUT
+    ENO             : BOOL;
+    bMotorRun       : BOOL;     // Output to Drive: Run
+    bMotorDir       : BOOL;     // Output to Drive: FALSE = FWD, TRUE = REV
+      
+    
+END_VAR
+VAR
+
+    nState          : INT := 0; 
+    nCurrentPos     : INT := 1; // 1, 2, 3, 4
+    fbTrigSensor    : R_TRIG;   		 
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbTrigSensor(CLK := bPosSensor);
+
+CASE nState OF
+    0: // IDLE
+        bMotorRun := FALSE;
+        
+        IF bStartCW THEN
+            bMotorDir := FALSE; // Forward
+            nState    := 10;
+        ELSIF bStartCCW THEN
+            bMotorDir := TRUE;  // Reverse
+            nState    := 10;
+        END_IF
+        
+    10: // START MOVING (Clear current sensor)
+        bMotorRun := TRUE;
+        IF NOT bPosSensor THEN 
+            nState := 20;
+        END_IF
+        
+    20: // MONITOR SENSOR & UPDATE POSITION
+        IF fbTrigSensor.Q THEN
+            // Update position based on direction
+            IF NOT bMotorDir THEN // CW Logic
+                nCurrentPos := nCurrentPos + 1;
+                IF nCurrentPos > 4 THEN nCurrentPos := 1; END_IF;
+            ELSE // CCW Logic
+                nCurrentPos := nCurrentPos - 1;
+                IF nCurrentPos < 1 THEN nCurrentPos := 4; END_IF;
+            END_IF
+            
+            nState := 30;
+        END_IF
+        
+    30: // STOPPING
+        bMotorRun := FALSE;
+        // Wait for buttons to be released before allowing next move
+        IF NOT bStartCW AND NOT bStartCCW THEN
+            nState := 0;
+        END_IF
+END_CASE
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="Turntable">
+      <LineId Id="102" Count="40" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

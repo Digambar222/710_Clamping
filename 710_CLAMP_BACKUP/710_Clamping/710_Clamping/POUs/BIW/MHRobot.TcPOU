@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="MHRobot" Id="{c7c042a7-a6de-4d5e-8ca9-80c4266ef516}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC MHRobot
+VAR_INPUT
+	// Inputs from Robot
+    bRobotInHome      : BOOL;    // Safe position
+    bRobotHasPart     : BOOL;    // Gripper sensor status (from Robot)
+    bRobotAtPick      : BOOL;    // Robot is positioned at the pick station
+    bRobotAtDrop      : BOOL;    // Robot is positioned at the drop station
+    
+END_VAR
+VAR_OUTPUT
+	 // Outputs to Robot
+	 ENO              : BOOL;
+    bEnablePick       : BOOL;    // OK to enter Pick Zone and grab
+    bEnableDrop       : BOOL;    // OK to enter Drop Zone and release
+
+END_VAR
+VAR
+	// Cell Logic
+    bPickStationReady : BOOL;    // e.g., Turntable is indexed and Part Present
+    bDropStationEmpty : BOOL;    // e.g., Outfeed conveyor is clear
+    nState            : INT;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE nState OF
+    0: // IDLE - Evaluate next move
+        bEnablePick := FALSE;
+        bEnableDrop := FALSE;
+        
+        IF bRobotInHome AND bPickStationReady AND NOT bRobotHasPart THEN
+            nState := 10; // Go Pick
+        ELSIF bRobotInHome AND bDropStationEmpty AND bRobotHasPart THEN
+            nState := 20; // Go Drop
+        END_IF
+
+    10: // PICK SEQUENCE
+        bEnablePick := TRUE;
+        // Wait until robot confirms it has grabbed the part and left the zone
+        IF bRobotHasPart AND bRobotInHome THEN
+            bEnablePick := FALSE;
+            nState := 0;
+        END_IF
+
+    20: // DROP SEQUENCE
+        bEnableDrop := TRUE;
+        // Wait until robot confirms it has released the part and left the zone
+        IF NOT bRobotHasPart AND bRobotInHome THEN
+            bEnableDrop := FALSE;
+            nState := 0;
+        END_IF
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="MHRobot">
+      <LineId Id="25" Count="26" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

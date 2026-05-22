@@ -1,0 +1,543 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="MODE_CONTROL" Id="{5b714dc2-f664-409b-8580-aeed624ddea5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MODE_CONTROL
+VAR_INPUT
+	PowerON : BOOL;
+	AutoSel : BOOL;
+	ManualSel : BOOL;
+	StartPB : BOOL;
+	StopPB : BOOL;
+	ResetPB : BOOL;
+	SafetyOK : BOOL;
+	CLAMP_CLOSE_1 : BOOL;
+	CLAMP_CLOSE_2 : BOOL;
+	CLAMP_OPEN_1 : BOOL;
+	CLAMP_OPEN_2 : BOOL;
+	Sensor_1ST_FB : BOOL;
+	Sensor_2ND_FB : BOOL;
+	Sensor_3RD_FB : BOOL;
+	Sensor_4TH_FB : BOOL;
+	Palm_Button : BOOL;
+	Turntable_0 : BOOL;
+	Turntable_180 : BOOL;
+	Trunion_0 : BOOL;
+	Trunion_20 : BOOL;
+	RD_Open : BOOL;
+	RD_Close : BOOL;
+	
+	JogRobotPB : BOOL;
+	ClampClosePB : BOOL;
+	ALL_CLAMP_HOME : BOOL;
+	ClampClosedSensor : BOOL;
+	WELD_RobotBusy : BOOL;
+	WELD_Robotcomplete : BOOL;
+	WELD_RobotHome : BOOL;
+	WELD_RobotReady : BOOL;
+	MH_RobotBusy : BOOL;
+	MH_Robotcomplete : BOOL;
+	MH_RobotHome : BOOL;
+	MH_RobotReady : BOOL;
+END_VAR
+VAR_OUTPUT
+	ENO : BOOL;
+	AutoMode :BOOL;
+	ManualMode : BOOL;
+	WELD_RobotStart : BOOL;
+	MH_RobotStart : BOOL;
+	RobotJog : BOOL;
+	ClampClose_1 : BOOL;
+	ClampClose_2 : BOOL;
+	ClampClose_3 : BOOL;
+	ClampClose_4 : BOOL;
+	ClampClose_5 : BOOL;
+	ClampClose_6 : BOOL;
+	ClampOpen_1 : BOOL;
+	ClampOpen_2 : BOOL;
+	ClampOpen_3 : BOOL;
+	ClampOpen_4 : BOOL;
+	ClampOpen_5 : BOOL;
+	ClampOpen_6 : BOOL;
+	Sensor_1ST : BOOL;
+	Sensor_2ND : BOOL;
+	Sensor_3RD : BOOL;
+	Sensor_4TH : BOOL;
+	Turntable_0_CMD : BOOL;
+	Turntable_180_CMD : BOOL;
+	Trunion_0_CMD : BOOL;
+	Trunion_20_CMD : BOOL;
+	RD_CLOSE_CMD : BOOL;
+	RD_OPEN_CMD : BOOL;
+	FaultLamp : BOOL;
+	
+END_VAR
+VAR
+	AutoMode_Sel_db       : BOOL;
+    ManualMode_Sel_db     : BOOL;
+
+    CycleRun       : BOOL;
+    FaultLatch     : BOOL;
+
+    Step           : INT := 0;
+
+    StartEdge      : R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+// ---------------------------------------
+// Mode Selection
+// ---------------------------------------
+
+IF PowerON AND AutoSel  THEN
+    AutoMode := TRUE;
+    ManualMode := FALSE;
+END_IF;
+
+IF PowerON AND NOT AutoSel THEN
+    ManualMode := TRUE;
+    AutoMode := FALSE;
+	
+	Step := 0;
+END_IF;
+
+
+// ---------------------------------------
+// Fault Handling
+// ---------------------------------------
+
+IF NOT SafetyOK THEN
+    FaultLatch := TRUE;
+END_IF;
+
+IF ResetPB THEN
+    FaultLatch := FALSE;
+END_IF;
+
+FaultLamp := FaultLatch;
+// ---------------------------------------
+// MANUAL MODE
+// ---------------------------------------
+
+IF ManualMode AND NOT FaultLatch THEN
+
+    // Manual Robot Jog
+    RobotJog := JogRobotPB;
+    RD_CLOSE_CMD :=FALSE;
+	RD_OPEN_CMD :=FALSE;
+    // Manual Clamp Control
+    //ClampClose := ClampClosePB;
+
+END_IF;
+
+
+// ---------------------------------------
+// AUTO MODE
+// ---------------------------------------
+
+IF AutoMode THEN //AND ALL_CLAMP_HOME AND Turntable_0 AND Trunion_0 AND RD_Open AND NOT FaultLatch THEN
+
+    StartEdge(CLK := StartPB);
+
+    CASE Step OF
+    // -----------------------------------
+    // CYCLE START
+    // -----------------------------------
+
+    0:
+        WELD_RobotStart := FALSE;
+		MH_RobotStart := FALSE;
+		//RD_OPEN_CMD :=FALSE;
+		//RD_CLOSE_CMD :=FALSE;
+		
+        CycleRun := FALSE;
+
+        IF  StartEdge.Q AND WELD_RobotReady THEN
+            Step := 10;
+            
+        END_IF;
+    // -----------------------------------
+    // RD_CLOSE-0
+    // -----------------------------------
+
+    10:
+        RD_CLOSE_CMD := TRUE;
+
+        IF RD_Close THEN
+			RD_CLOSE_CMD := FALSE;
+            Step := 20;
+        END_IF;
+	// -----------------------------------
+    // TRUNION-20
+    // -----------------------------------
+
+    20:
+        Trunion_20_CMD := TRUE;
+
+        IF Trunion_20 THEN
+			Trunion_20_CMD:=FALSE;
+            Step := 30;
+        END_IF;
+    // -----------------------------------
+    // RD_OPEN-0
+    // -----------------------------------
+
+    30:
+        RD_OPEN_CMD := TRUE;
+
+        IF RD_Open THEN
+            Step := 40;
+			 RD_OPEN_CMD := FALSE;
+        END_IF;
+	// -----------------------------------
+    // Operator Load_1ST PART
+    // -----------------------------------
+
+    40:
+        
+
+        Sensor_1ST := TRUE ;
+        //Sensor_2ND := TRUE;
+        //Sensor_3RD := TRUE;
+        //Sensor_4TH := TRUE; 
+	   IF  Sensor_1ST_FB AND Palm_Button THEN
+            Step := 50;
+        END_IF;
+	// -----------------------------------
+    // Operator Load_2ND PART
+    // -----------------------------------
+     50:
+        // Sensor_1ST := TRUE ;
+        Sensor_2ND := TRUE;
+        //Sensor_3RD := TRUE;
+        //Sensor_4TH := TRUE; 
+	   IF Sensor_2ND_FB AND Palm_Button THEN
+            Step := 60;
+        END_IF;
+		
+    // -----------------------------------
+    // Clamp Close_1ST,3RD,5TH
+    // -----------------------------------
+
+    60:
+        ClampClose_1 := TRUE;
+		ClampClose_3 := TRUE;
+		ClampClose_5 := TRUE;
+        IF ClampClosedSensor THEN
+            Step := 70;
+        END_IF;
+   // -----------------------------------
+    // RD_CLOSE-0
+    // -----------------------------------
+
+    70:
+        RD_CLOSE_CMD := TRUE;
+        ClampClose_1 := FALSE;
+		ClampClose_3 := FALSE;
+		ClampClose_5 := FALSE;
+        IF CLAMP_CLOSE_1 AND RD_Close THEN
+            Step := 80;
+        END_IF;
+	// -----------------------------------
+    // TRUNION-80
+    // -----------------------------------
+
+    80:
+        Trunion_20_CMD := TRUE;
+        RD_CLOSE_CMD := FALSE;
+        IF Trunion_20 THEN
+			 Trunion_20_CMD := FALSE;
+            Step := 90;
+        END_IF;
+    // -----------------------------------
+    // RD_OPEN-0
+    // -----------------------------------
+
+    90:
+        RD_OPEN_CMD := TRUE;
+       
+        IF RD_Open THEN
+			 RD_OPEN_CMD := FALSE;
+            Step := 100;
+        END_IF;
+	// -----------------------------------
+    // Operator Load_3RD_PART
+    // -----------------------------------
+
+    100:
+       Sensor_3RD := TRUE ;
+        //Sensor_2ND := TRUE;
+        //Sensor_3RD := TRUE;
+        //Sensor_4TH := TRUE; 
+	   IF Sensor_3RD_FB AND Palm_Button THEN
+            Step := 110;
+        END_IF;
+   // -----------------------------------
+    // Operator Load_4TH_PART
+    // -----------------------------------
+
+    110:
+       // Sensor_1ST := TRUE ;
+        Sensor_4TH := TRUE;
+        //Sensor_3RD := TRUE;
+        //Sensor_4TH := TRUE; 
+	   IF Sensor_4TH_FB AND Palm_Button THEN
+            Step := 120;
+        END_IF;
+	//------------------------------
+	// RD_CLOSE-0
+    // -----------------------------------
+
+    120:
+        RD_CLOSE_CMD := TRUE;
+        IF RD_Close THEN
+			RD_CLOSE_CMD := FALSE;
+            Step := 130;
+        END_IF;
+	// -----------------------------------
+    //  CLAMP CLOSE 2ND,4TH, 6TH
+    // -----------------------------------
+
+    130: ClampClose_2 := TRUE;
+		 ClampClose_4 := TRUE;
+		 ClampClose_6 := TRUE;
+         
+        
+        IF CLAMP_CLOSE_2 THEN
+			
+            Step := 140;
+        END_IF;
+	// -----------------------------------
+    // TURNTABLE-180* AND TRUNION_0*
+    // -----------------------------------
+
+    140: ClampClose_2 := FALSE;
+		 ClampClose_4 := FALSE;
+		 ClampClose_6 := FALSE;
+         Turntable_180_CMD := TRUE;
+         Trunion_0_CMD := TRUE;
+        IF Turntable_180 AND  Trunion_0 THEN
+			Turntable_180_CMD := FALSE;
+			Trunion_0_CMD := FALSE;
+            Step := 150;
+        END_IF;
+   
+	
+
+    // -----------------------------------
+    // Start WELD_Robot
+    // -----------------------------------
+
+    150:
+        WELD_RobotStart := TRUE;
+
+        IF WELD_Robotcomplete THEN
+            WELD_RobotStart := FALSE;
+            Step := 160;
+        END_IF;
+
+
+    // -----------------------------------
+    // CLAMP OPEN 1ST,3RD,5TH
+    // -----------------------------------
+
+    160:
+        CycleRun := TRUE;
+		ClampOpen_1 := TRUE;
+		ClampOpen_3 := TRUE;
+		ClampOpen_5 := TRUE;
+        IF  CLAMP_OPEN_1 THEN
+	    ClampOpen_1 := FALSE;
+		ClampOpen_3 := FALSE;
+		ClampOpen_5 := FALSE;
+            Step := 170;
+        END_IF;
+    // -----------------------------------
+    // RD_OPEN
+    // -----------------------------------
+		
+	170: 
+        RD_OPEN_CMD := TRUE;
+        
+        IF RD_Open THEN
+			RD_OPEN_CMD := FALSE;
+            Step := 180;
+        END_IF;
+		
+	
+
+    // -----------------------------------
+    // Start MH_Robot_1ST
+    // -----------------------------------
+
+    180:
+        MH_RobotStart := TRUE;
+		Sensor_1ST := FALSE;
+        Sensor_2ND := FALSE;
+        IF MH_Robotcomplete AND NOT Sensor_1ST_FB AND NOT Sensor_2ND_FB  THEN
+            MH_RobotStart := FALSE;
+            Step := 190;
+        END_IF;
+	// -----------------------------------
+    // TRUNION_45
+    // -----------------------------------	
+	 190:
+        Trunion_20_CMD := TRUE;
+        RD_CLOSE_CMD := FALSE;
+        IF Trunion_20 THEN
+			 Trunion_20_CMD := FALSE;
+            Step := 200;
+        END_IF;
+    
+	// -----------------------------------
+    // Start UNCLAMP 2ND, 4TH,6TH
+    // -----------------------------------
+		
+    200:
+        CycleRun := TRUE;
+		ClampOpen_2 := TRUE;
+		ClampOpen_4 := TRUE;
+		ClampOpen_6 := TRUE;
+        IF CLAMP_OPEN_2 THEN
+	    ClampOpen_2 := FALSE;
+		ClampOpen_4 := FALSE;
+		ClampOpen_6 := FALSE;
+            Step := 210;
+        END_IF;
+	// -----------------------------------
+    // Start MH_Robot_2ND
+    // -----------------------------------
+		
+     210:
+        MH_RobotStart := TRUE;
+		Sensor_3RD := FALSE;
+		Sensor_4TH := FALSE;
+        IF MH_RobotBusy AND NOT Sensor_3RD_FB AND NOT Sensor_4TH_FB THEN
+            MH_RobotStart := FALSE;
+            Step := 220;
+        END_IF;
+// -----------------------------------
+    // Cycle Finish
+    // -----------------------------------
+
+    220:
+        CycleRun := FALSE;
+        
+        Step := 0;
+
+    END_CASE;
+
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="MODE_CONTROL">
+      <LineId Id="10" Count="12" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="376" Count="0" />
+      <LineId Id="23" Count="14" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="39" Count="8" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="48" Count="10" />
+      <LineId Id="60" Count="9" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="377" Count="1" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="70" Count="2" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="250" Count="7" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="163" Count="7" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="260" Count="8" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="177" Count="7" />
+      <LineId Id="209" Count="2" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="185" Count="1" />
+      <LineId Id="466" Count="1" />
+      <LineId Id="465" Count="0" />
+      <LineId Id="212" Count="1" />
+      <LineId Id="216" Count="4" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="80" Count="6" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="87" Count="2" />
+      <LineId Id="272" Count="5" />
+      <LineId Id="355" Count="1" />
+      <LineId Id="278" Count="11" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="290" Count="9" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="302" Count="5" />
+      <LineId Id="310" Count="5" />
+      <LineId Id="470" Count="1" />
+      <LineId Id="316" Count="0" />
+      <LineId Id="469" Count="0" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="320" Count="5" />
+      <LineId Id="357" Count="0" />
+      <LineId Id="327" Count="4" />
+      <LineId Id="333" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="334" Count="5" />
+      <LineId Id="358" Count="1" />
+      <LineId Id="340" Count="3" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="344" Count="1" />
+      <LineId Id="363" Count="3" />
+      <LineId Id="374" Count="1" />
+      <LineId Id="369" Count="3" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="362" Count="0" />
+      <LineId Id="301" Count="0" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="90" Count="5" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="97" Count="12" />
+      <LineId Id="407" Count="1" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="421" Count="1" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="112" Count="1" />
+      <LineId Id="483" Count="1" />
+      <LineId Id="482" Count="0" />
+      <LineId Id="445" Count="0" />
+      <LineId Id="424" Count="15" />
+      <LineId Id="504" Count="0" />
+      <LineId Id="440" Count="4" />
+      <LineId Id="502" Count="1" />
+      <LineId Id="501" Count="0" />
+      <LineId Id="492" Count="6" />
+      <LineId Id="491" Count="0" />
+      <LineId Id="486" Count="1" />
+      <LineId Id="485" Count="0" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="447" Count="9" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="489" Count="1" />
+      <LineId Id="488" Count="0" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="458" Count="2" />
+      <LineId Id="505" Count="0" />
+      <LineId Id="461" Count="2" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="140" Count="10" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="38" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

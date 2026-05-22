@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="MH_ROBOT" Id="{5350efd6-755d-4e9d-8238-97b9082e52ed}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MH_ROBOT
+VAR_INPUT
+	StartPB : BOOL;
+	RobotReady : BOOL;
+	
+	
+	RobotFault : BOOL;
+	SafetyOK : BOOL;
+	MHProgram : INT;
+	ResetPB : BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	Eno : BOOL;
+	RobotStart : BOOL;
+	RobotReset : BOOL;
+	RobotBusy : BOOL;
+	RobotComplete : BOOL;
+	RobotHOME : BOOL;
+	ProgBit0 : BOOL;
+	ProgBit1 : BOOL;
+	ProgBit2 : BOOL;
+	ProgBit3 : BOOL;
+	
+END_VAR
+VAR
+	ProgNum: INT;
+	T_MH_Time : TON;
+	
+	AutoRequest : BOOL;
+    StartEdge   : R_TRIG;
+    CycleRun    : BOOL;
+    FaultLamp  : BOOL;
+	CycleComplete : BOOL;
+	Step : INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*0 = Idle
+10 = Send Program Number
+20 = Start Robot
+30 = Wait Busy
+40 = Wait Complete
+50 = Cycle Finish
+900 = Fault*)
+IF NOT SafetyOK THEN Step := 0;
+	
+END_IF
+CASE Step OF
+
+0:   RobotHOME := TRUE;
+     //RobotStart := FALSE;
+     RobotBusy := FALSE;
+	 T_MH_Time(IN :=FALSE);
+	 
+	 RobotComplete := FALSE;
+    IF StartPB AND SafetyOK THEN
+       Step := 10;
+    END_IF;
+
+10:
+    MHProgram := 5;
+	RobotBusy := TRUE;
+	RobotHOME := FALSE;
+    Step := 20;
+
+20:
+    //RobotStart := TRUE;
+	//RobotBusy := FALSE;
+	//RobotComplete := TRUE;
+	T_MH_Time(IN := TRUE, PT :=T#7S);
+   
+    IF T_MH_Time.Q THEN
+       RobotComplete := TRUE; RobotStart := FALSE; RobotBusy := FALSE;
+       Step := 30;
+    END_IF;
+
+30:
+    IF RobotComplete THEN
+		//T_Weld_Time.Q :=FALSE;
+       Step := 0;
+    END_IF;
+
+
+
+END_CASE;]]></ST>
+    </Implementation>
+    <LineIds Name="MH_ROBOT">
+      <LineId Id="65" Count="5" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="98" Count="1" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="101" Count="1" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="13" Count="5" />
+      <LineId Id="94" Count="1" />
+      <LineId Id="19" Count="3" />
+      <LineId Id="96" Count="1" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="23" Count="7" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="31" Count="2" />
+      <LineId Id="39" Count="1" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

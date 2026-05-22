@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <GVL Name="ROBOT" Id="{0c466d73-8b1a-4faa-aaed-32de75a5c56c}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	START : BOOL;
+	STOP : BOOL;
+	SAFETY_OK : BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

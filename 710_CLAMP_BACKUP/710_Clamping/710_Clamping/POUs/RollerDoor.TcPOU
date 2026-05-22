@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="RollerDoor" Id="{1ed1661f-21eb-4959-a6e2-faf2ecc3555f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC RollerDoor
+VAR_INPUT
+	
+    bOpenButton     : BOOL;     // Pushbutton / Pull-cord
+    bCloseButton    : BOOL;     // Pushbutton
+    bSafetyEdge     : BOOL;     // Bottom edge sensor (Normally Closed for safety)
+    bPhotoeye       : BOOL;     // Obstruction sensor (Normally Closed)
+    bLimitUp        : BOOL;     // Door fully open sensor
+    bLimitDown      : BOOL;     // Door fully closed sensor
+
+
+END_VAR
+VAR_OUTPUT
+	ENO             : BOOL;
+    bMotorUp        : BOOL;     // Up Contactor
+    bMotorDown      : BOOL;     // Down Contactor
+
+END_VAR
+VAR
+	
+    nState          : INT;      // 0: Stopped, 10: Opening, 20: Closing, 99: Error
+    fbAutoCloseTimer: TON;      // Automatically close after opening
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Auto-Close Timer: Starts when door is fully open
+//fbAutoCloseTimer(IN := bLimitUp, PT := T#10S);
+
+CASE nState OF
+    0: // STOPPED
+        bMotorUp   := FALSE;
+        bMotorDown := FALSE;
+        
+        IF bOpenButton AND NOT bLimitUp THEN
+            nState := 10;
+        ELSIF bCloseButton  AND NOT bLimitDown THEN
+            // Only allow closing if safety is clear
+            IF bSafetyEdge AND bPhotoeye THEN
+                nState := 20;
+            END_IF
+        END_IF
+
+    10: // OPENING
+        bMotorUp   := TRUE;
+        bMotorDown := FALSE;
+        
+        IF bLimitUp OR bCloseButton THEN
+            nState := 0; // Stop if reached limit or close pressed
+        END_IF
+
+    20: // CLOSING
+        bMotorUp   := FALSE;
+        bMotorDown := TRUE;
+        
+        // Safety Reversal: If something is hit or detected, open immediately
+        IF NOT bSafetyEdge OR NOT bPhotoeye THEN
+            nState := 10; 
+        ELSIF bLimitDown OR bOpenButton THEN
+            nState := 0;
+        END_IF
+
+    99: // ERROR / EMERGENCY STOP
+        bMotorUp   := FALSE;
+        bMotorDown := FALSE;
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="RollerDoor">
+      <LineId Id="38" Count="39" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="ROLLER_DOOR" Id="{0a200101-a861-4cbd-83ab-174f036905fe}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK ROLLER_DOOR
+VAR_INPUT
+	Door_Open_LS      : BOOL;
+    Door_Close_LS     : BOOL;
+
+    Open_CMD          : BOOL;
+    Close_CMD         : BOOL;
+
+    Auto_Mode         : BOOL;
+    Manual_Mode       : BOOL;
+
+    Man_Open_PB       : BOOL;
+    Man_Close_PB      : BOOL;
+
+    Safety_Beam       : BOOL;
+    Reset_Fault       : BOOL;
+END_VAR
+VAR_OUTPUT
+	ENO : BOOL;
+	Motor_Open        : BOOL;
+    Motor_Close       : BOOL;
+
+END_VAR
+VAR
+	 State             : INT := 0;
+    // Timers
+    T_Open            : TON;
+    T_Close           : TON;
+	 // Status
+    Door_Open_OK      : BOOL;
+    Door_Close_OK     : BOOL;
+    Busy              : BOOL;
+    Fault             : BOOL;
+
+    // Alarms
+    Alarm_OpenTimeout : BOOL;
+    Alarm_CloseTimeout: BOOL;
+    Alarm_SensorFault : BOOL;
+    Alarm_Obstacle    : BOOL;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// SENSOR VALIDATION
+// ------------------------------------
+IF Door_Open_LS AND Door_Close_LS THEN
+    Alarm_SensorFault := TRUE;
+    Fault := TRUE;
+    State := 99;
+END_IF;
+// ------------------------------------
+// AUTO MODE
+// ------------------------------------
+IF Auto_Mode AND NOT Manual_Mode THEN
+    IF Open_CMD AND NOT Door_Open_LS THEN
+        Motor_Open := TRUE;
+    ELSE
+        Motor_Open := FALSE;
+    END_IF;
+	
+    IF Close_CMD AND NOT Door_Close_LS AND NOT Safety_Beam THEN
+        Motor_Close := TRUE;
+    ELSE
+        Motor_Close := FALSE;
+    END_IF;
+	END_IF;
+
+
+// ------------------------------------
+// MANUAL MODE
+// ------------------------------------
+IF Manual_Mode AND NOT Auto_Mode THEN
+
+    // Manual OPEN
+    IF Man_Open_PB AND NOT Door_Open_LS THEN
+        Motor_Open := TRUE;
+    ELSE
+        Motor_Open := FALSE;
+    END_IF;
+
+
+    // Manual CLOSE
+    IF Man_Close_PB AND NOT Door_Close_LS AND NOT Safety_Beam THEN
+        Motor_Close := TRUE;
+    ELSE
+        Motor_Close := FALSE;
+    END_IF;
+	END_IF;
+
+
+// ------------------------------------
+// FINAL SAFETY INTERLOCK
+// ------------------------------------
+IF Motor_Open AND Motor_Close THEN
+    Motor_Open := FALSE;
+    Motor_Close := FALSE;
+	END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="ROLLER_DOOR">
+      <LineId Id="52" Count="5" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="59" Count="3" />
+      <LineId Id="255" Count="3" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="259" Count="4" />
+      <LineId Id="183" Count="20" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="205" Count="7" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="213" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

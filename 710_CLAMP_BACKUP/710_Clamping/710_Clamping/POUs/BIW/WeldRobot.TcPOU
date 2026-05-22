@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="WeldRobot" Id="{32a74fb2-7d8b-4951-9238-89af33b56a3d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC WeldRobot
+VAR_INPUT
+	
+	// Inputs from Robot (to PLC)
+    bRobotInHome      : BOOL;    // Robot is at safe perch
+    bRobotBusy        : BOOL;    // Robot is currently welding
+    bRobotFinished    : BOOL;    // Robot completed the weld cycle
+      
+END_VAR
+VAR_OUTPUT
+	
+	// Outputs to Robot (from PLC)
+	ENO               : BOOL;
+    bStartWeld        : BOOL;    // Signal to Robot to start its internal program
+    nJobNumber        : INT;     // Tells robot which weld path to use (1-4 for our table)
+
+END_VAR
+VAR
+
+// Cell Status (Internal)
+    bPartReady        : BOOL;    // From our "Part Present & Clamped" logic
+    nState            : INT;     
+    fbTimeout         : TON;     // Safety watchdog	
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE nState OF
+    0: // IDLE - Wait for Part and Robot Home
+        bStartWeld := FALSE;
+        IF bPartReady AND bRobotInHome THEN
+            nState := 10;
+        END_IF
+        
+    10: // PREPARE - Set Job Number for the current table station
+        nJobNumber := 1; // Example: Station 1
+        nState     := 20;
+        
+    20: // START ROBOT
+        IF bRobotInHome THEN
+            bStartWeld := TRUE; // Pulse the start signal
+            nState     := 30;
+        END_IF
+        
+    30: // WAIT FOR ACKNOWLEDGEMENT
+        IF bRobotBusy THEN
+            bStartWeld := FALSE; // Turn off start signal once robot moves
+            nState     := 40;
+        END_IF
+        
+    40: // MONITOR WELDING
+        // Watchdog: If robot stays busy for > 60s, something is wrong
+        fbTimeout(IN := bRobotBusy, PT := T#60S);
+        
+        IF bRobotFinished THEN
+            nState := 50;
+        ELSIF fbTimeout.Q THEN
+            nState := 99; // Error: Robot Stuck
+        END_IF
+        
+    50: // CYCLE COMPLETE
+        IF NOT bRobotFinished THEN // Wait for robot to reset its finish signal
+            nState := 0;
+        END_IF
+        
+    99: // ERROR STATE
+        bStartWeld := FALSE;
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="WeldRobot">
+      <LineId Id="36" Count="40" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

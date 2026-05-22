@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Trunion" Id="{77e886a1-cc90-4bc4-a006-231bfbb2aa59}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC Trunion
+VAR_INPUT
+	
+    bStart          : BOOL;     // Start rotation command
+    bHomeSensor     : BOOL;     // Proximity sensor for position  
+  
+END_VAR
+
+VAR_OUTPUT
+	ENO             : BOOL;
+    bMotorRun       : BOOL;     // Command to the motor/drive 
+
+END_VAR
+
+VAR	
+    nState          : INT := 0; // 0: Idle, 10: Starting, 20: Rotating, 30: Stopping
+    fbTimer         : TON;      // Safety timeout timer
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE nState OF
+    0: // IDLE - Wait for Start Command
+        bMotorRun := FALSE;
+        IF bStart THEN
+            nState := 10;
+        END_IF
+        
+    10: // STARTING - Turn on motor and wait for sensor to clear
+        bMotorRun := TRUE;
+        IF NOT bHomeSensor THEN // Wait for current part to move away
+            nState := 20;
+        END_IF
+        
+    20: // ROTATING - Looking for the next slot
+        bMotorRun := TRUE;
+        IF bHomeSensor THEN // Sensor detects the next 90-degree slot
+            nState := 30;
+        END_IF
+        
+    30: // STOPPING - Stop motor and return to Idle
+        bMotorRun := FALSE;
+        IF NOT bStart THEN // Require button release to reset
+            nState := 0;
+        END_IF
+END_CASE
+
+// Optional: Safety Timeout to prevent motor burnout if sensor fails
+fbTimer(IN := (nState = 20), PT := T#5S);
+IF fbTimer.Q THEN
+    bMotorRun := FALSE;
+    nState := 0; // Or transition to an Error State
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="Trunion">
+      <LineId Id="33" Count="31" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <GVL Name="Outputs" Id="{3206d77a-9559-40ba-b41b-e4d3359e4342}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+
+
+	o_CC1_CLAMPING_UNIT1_3_WP : BOOL;
+	o_CC1_CLAMPING_UNIT1_3_HP : BOOL;
+	o_CC2_CLAMPING_UNIT2_3_WP : BOOL;
+	o_CC2_CLAMPING_UNIT2_3_HP : BOOL;
+	o_CC3_CLAMPING_UNIT3_3_WP : BOOL;
+	o_CC3_CLAMPING_UNIT3_3_HP : BOOL;
+	o_CC4_CLAMPING_UNIT4_3_WP : BOOL;
+	o_CC4_CLAMPING_UNIT4_3_HP : BOOL;
+	o_CC5_CLAMPING_UNIT5_1_WP : BOOL;
+	o_CC5_CLAMPING_UNIT5_1_HP : BOOL;
+	o_CC6_CLAMPING_UNIT6_1_WP : BOOL;
+	o_CC6_CLAMPING_UNIT6_1_HP : BOOL;
+	// TURN TABLE
+	o_POSITION_CW_TT : BOOL;
+	o_POSITION_CCW_TT : BOOL;
+	//TRUNION
+	o_Motor_Fwd       : BOOL;
+    o_Motor_Rev       : BOOL;
+	//ROLLER DOOR
+	o_ROLL_DR_Open       : BOOL;
+    o_ROLL_DR_Close       : BOOL;
+	//Robot
+	ROBOT_START : BOOL;
+	ROBOT_RESET : BOOL;
+	PROGRAM_0 : BOOL;
+	PROGRAM_1 : BOOL;
+	PROGRAM_2 : BOOL;
+	PROGRAM_3 : BOOL;
+	//MH_ROBOT 
+	MH_ROBOT_START : BOOL;
+	MH_ROBOT_RESET : BOOL;
+	MH_PROGRAM_0 : BOOL;
+	MH_PROGRAM_1 : BOOL;
+	MH_PROGRAM_2 : BOOL;
+	MH_PROGRAM_3 : BOOL;
+	O_FAULT_LAMP : BOOL;
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

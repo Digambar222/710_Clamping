@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="TURNTABLE_2POS" Id="{75d79073-0018-4452-aa95-ef9233137bcf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TURNTABLE_2POS
+VAR_INPUT
+	Drive_Ready : BOOL;
+    Pos_0_Sensor    : BOOL;
+    Pos_180_Sensor    : BOOL;
+
+    Auto_Mode      : BOOL;
+    Manual_Mode    : BOOL;
+
+    Index_To_0     : BOOL;
+    Index_To_180     : BOOL;
+
+    Man_To_0       : BOOL;
+    Man_To_180       : BOOL;
+
+    Reset_Fault    : BOOL;
+END_VAR
+VAR_OUTPUT
+	ENABLE : BOOL;
+    Motor_CW       : BOOL;
+    Motor_CCW      : BOOL;
+END_VAR
+VAR
+	  State          : INT := 0;
+	  T_Move         : TON;
+	  Alarm_Move_Timeout : BOOL;
+      Alarm_Sensor_Error : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Sensor Validation
+// ----------------------------
+IF Pos_0_Sensor AND Pos_180_Sensor THEN
+    Alarm_Sensor_Error := TRUE;
+    State := 99;
+END_IF;
+
+
+// ----------------------------
+// AUTO MODE
+// ----------------------------
+IF Auto_Mode THEN
+
+    CASE State OF
+
+        // At Position 0*
+        0:
+            IF Index_To_180 THEN
+                State := 1;
+            END_IF;
+			 // Moving to 180*
+        1:
+            Motor_CW := TRUE;
+            T_Move(IN := TRUE, PT := T#8S);
+
+            IF Pos_180_Sensor THEN
+                Motor_CW := FALSE;
+                T_Move(IN := FALSE);
+                State := 2;
+            ELSIF T_Move.Q THEN
+                Alarm_Move_Timeout := TRUE;
+                State := 99;
+            END_IF;
+
+        // At Position B
+        2:
+            IF Index_To_0 THEN
+                State := 3;
+            END_IF;
+ // Moving to A
+        3:
+            Motor_CCW := TRUE;
+            T_Move(IN := TRUE, PT := T#6S);
+
+            IF Pos_0_Sensor THEN
+                Motor_CCW := FALSE;
+                T_Move(IN := FALSE);
+                State := 0;
+            ELSIF T_Move.Q THEN
+                Alarm_Move_Timeout := TRUE;
+                State := 99;
+            END_IF;
+
+        // Fault
+        99:
+            Motor_CW  := FALSE;
+            Motor_CCW := FALSE;
+
+            IF Reset_Fault THEN
+                Alarm_Move_Timeout := FALSE;
+                Alarm_Sensor_Error := FALSE;
+                State := 0;
+            END_IF;
+			 END_CASE;
+
+END_IF;
+
+
+// ----------------------------
+// MANUAL MODE
+// ----------------------------
+IF Manual_Mode AND NOT Auto_Mode THEN
+      State := 0;
+    IF Man_To_180 AND NOT Pos_180_Sensor THEN
+        Motor_CW := TRUE;
+    ELSE
+        Motor_CW := FALSE;
+    END_IF;
+
+    IF Man_To_0 AND NOT Pos_0_Sensor THEN
+        Motor_CCW := TRUE;
+    ELSE
+        Motor_CCW := FALSE;
+    END_IF;
+
+END_IF;
+// ----------------------------
+// FINAL SAFETY INTERLOCK
+// ----------------------------
+IF Motor_CW AND Motor_CCW THEN
+    Motor_CW  := FALSE;
+    Motor_CCW := FALSE;
+END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="TURNTABLE_2POS">
+      <LineId Id="29" Count="18" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="49" Count="41" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="92" Count="28" />
+      <LineId Id="91" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

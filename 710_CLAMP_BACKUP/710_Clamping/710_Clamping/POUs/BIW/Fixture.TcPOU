@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Fixture" Id="{490a0ad9-0368-4037-827b-27975156d528}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Fixture
+VAR
+	
+    bPartPresent1   : BOOL;     // Sensor 1 
+    bPartPresent2   : BOOL;     // Sensor 2 
+    bOperatorClear  : BOOL;     // Light curtain or "Load Complete" button
+    
+
+    bPartIsLoaded   : BOOL;     // Status for other POUs
+    fbPartDebounce  : TON;      // Filters shaky sensor signals
+    nStep           : INT;      // Load sequence tracking
+    sLoadStatus     : STRING;   // Operator feedback
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// 1. Debounce Sensors: Part must be stable for 0.5s to be "Present"
+fbPartDebounce(IN := (bPartPresent1 AND bPartPresent2), PT := T#500MS);
+
+CASE nStep OF
+    0: // WAIT FOR LOAD
+        bPartIsLoaded := FALSE;
+        sLoadStatus   := 'Waiting for operator to load part...';
+        
+        IF fbPartDebounce.Q THEN
+            nStep := 10;
+        END_IF
+        
+    10: // PART DETECTED - WAIT FOR OPERATOR CLEARANCE
+        sLoadStatus := 'Part detected. Confirm clear (Light Curtain/Button).';
+        
+        // Ensure operator is clear and part is still there
+        IF bOperatorClear AND fbPartDebounce.Q THEN
+            bPartIsLoaded := TRUE;
+            sLoadStatus   := 'Ready to Clamp';
+            // Transition to Clamping Logic here
+        ELSIF NOT fbPartDebounce.Q THEN
+            nStep := 0; // Part was removed
+        END_IF
+        
+    // Reset after station cycle completes
+    100: 
+        bPartIsLoaded := FALSE;
+        nStep := 0;
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="Fixture">
+      <LineId Id="21" Count="28" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

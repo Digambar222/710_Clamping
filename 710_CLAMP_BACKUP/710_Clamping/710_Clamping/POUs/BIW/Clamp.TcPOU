@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Clamp" Id="{e17036fd-4d59-4ea8-9ba3-121c7a6a58c8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC Clamp
+VAR_INPUT
+	
+    bCloseClampReq  : BOOL;     // Command to close (from HMI or Logic)
+    bOpenClampReq   : BOOL;     // Command to open
+    
+    bClampOpened    : BOOL;     // Sensor: Clamp is fully back
+    bClampClosed    : BOOL;     // Sensor: Clamp is fully forward/extended
+	Reset		    : BOOL;
+    
+END_VAR
+VAR_OUTPUT
+	ENO             : BOOL;
+    bSolenoidClose  : BOOL;     // Output to Valve (Close coil)
+    bSolenoidOpen   : BOOL;     // Output to Valve (Open coil)	
+	//Timeout 		: BOOL;
+
+END_VAR
+VAR
+    nState          : INT;      // 0: Idle, 10: Closing, 20: Closed, 30: Opening
+    fbTimeout       : TON;      // Watchdog timer for sensor failure
+    sAlarm          : STRING;   // Error message
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Watchdog timer: If clamp doesn't reach sensor in 2 seconds, trigger error
+fbTimeout(IN := (nState = 10 OR nState = 30), PT := T#2S);
+
+CASE nState OF
+    0: // IDLE / OPEN
+        bSolenoidClose := FALSE;
+        bSolenoidOpen  := TRUE; // Maintain open pressure
+        IF bCloseClampReq AND NOT bOpenClampReq THEN
+            nState := 10;
+        END_IF
+
+    10: // CLOSING
+        bSolenoidOpen  := FALSE;
+        bSolenoidClose := TRUE;
+        
+        IF bClampClosed THEN
+            nState := 20;
+        ELSIF fbTimeout.Q THEN
+            sAlarm := 'Error: Clamp Close Timeout';
+            nState := 99; // Error State
+        END_IF
+
+    20: // FULLY CLOSED
+        bSolenoidClose := TRUE; // Maintain grip pressure
+        IF bOpenClampReq THEN
+            nState := 30;
+        END_IF
+
+    30: // OPENING
+        bSolenoidClose := FALSE;
+        bSolenoidOpen  := TRUE;
+        
+        IF bClampOpened THEN
+            nState := 0;
+        ELSIF fbTimeout.Q THEN
+            sAlarm := 'Error: Clamp Open Timeout';
+            nState := 99;
+        END_IF
+
+    99: // ERROR STATE
+        bSolenoidClose := FALSE;
+        bSolenoidOpen  := FALSE; // De-energize for safety
+        IF NOT bCloseClampReq AND NOT bOpenClampReq THEN
+            nState := 0; // Reset after clearing request
+        END_IF
+END_CASE
+
+IF reset THEN
+	nState := 0; // Reset after clearing request
+	sAlarm := '';
+	END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="Clamp">
+      <LineId Id="3" Count="50" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

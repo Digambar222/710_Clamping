@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="FEEDBACK_FB" Id="{3ecdccd0-cd36-4d6e-a726-65779ac8a1ce}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FEEDBACK_FB
+VAR_INPUT
+	EN : BOOL;
+	Command_1  : BOOL;
+	Command_2  : BOOL;
+	Command_3  : BOOL;
+	Command_4  : BOOL;
+END_VAR
+VAR_OUTPUT
+	ENO           : BOOL;
+	Feedback_1    : BOOL;     
+    Feedback_2    : BOOL;
+	Feedback_3    : BOOL;     
+    Feedback_4    : BOOL;     
+	
+END_VAR
+VAR
+	   fb1_Time       : TON;
+	   fb2_Time       : TON;
+	   fb3_Time       : TON;
+	   fb4_Time       : TON;
+	   fbDelay1 : TIME := T#1S;
+	   fbDelay2 : TIME := T#1S;
+	   fbDelay3 : TIME := T#1S;
+	   fbDelay4 : TIME := T#1S;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+////////////////FEEDBACK 1 DELAY//////////////
+
+IF Command_1 THEN
+	fb1_Time(IN := Command_1, PT :=fbDelay1);
+	Feedback_1 := fb1_Time.Q;
+ELSE 
+	Feedback_1 :=FALSE;
+	fb1_Time(IN := FALSE);
+END_IF;
+	
+////////////////FEEDBACK 2 DELAY//////////////
+
+IF Command_2 THEN
+	fb2_Time(IN := Command_2, PT := fbDelay2);
+	Feedback_2 := fb2_Time.Q;
+ELSE 
+	Feedback_2 :=FALSE;	
+	fb2_Time(IN := FALSE);
+END_IF;
+	
+////////////////FEEDBACK 3 DELAY//////////////
+
+IF Command_3 THEN
+	fB3_Time(IN := Command_3, PT := fbDelay3);
+	Feedback_3 := fb3_Time.Q;
+ELSE 
+	Feedback_3 :=FALSE;	
+	fb3_Time(IN := FALSE);
+END_IF;
+	
+////////////////FEEDBACK 4 DELAY//////////////
+
+IF Command_4 THEN
+	fb4_Time(IN := Command_4, PT := fbDelay4);
+	Feedback_4 := fb4_Time.Q;
+ELSE 
+	Feedback_4 :=FALSE;	
+	fb4_Time(IN := FALSE);
+END_IF;	
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FEEDBACK_FB">
+      <LineId Id="3" Count="40" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="SENSOR" Id="{a7acc9d7-9de0-4b0a-a3e9-daa7079759b6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK SENSOR
+VAR_INPUT
+	SENSOR_1 : BOOL;
+	SENSOR_2 : BOOL;
+	SENSOR_3 : BOOL;
+	SENSOR_4 : BOOL;
+	SENSOR_5 : BOOL;
+	SENSOR_6 : BOOL;
+	SENSOR_7 : BOOL;
+	SENSOR_8 : BOOL;
+	SENSOR_9 : BOOL;
+	SENSOR_10 : BOOL;
+	SENSOR_11 : BOOL;
+	SENSOR_12 : BOOL;
+	SENSOR_13 : BOOL;
+	SENSOR_14 : BOOL;
+	SENSOR_15 : BOOL;
+	SENSOR_16 : BOOL;
+	SENSOR_17 : BOOL;
+	SENSOR_18 : BOOL;
+	SENSOR_19 : BOOL;
+	SENSOR_20 : BOOL;
+	SENSOR_21 : BOOL;
+	SENSOR_22 : BOOL;
+	SENSOR_23 : BOOL;
+	SENSOR_24 : BOOL;
+	SENSOR_25 : BOOL;
+	SENSOR_26 : BOOL;
+	SENSOR_27 : BOOL;
+	SENSOR_28 : BOOL;
+	
+	
+	
+	
+	
+	
+END_VAR
+VAR_OUTPUT
+	ENO : BOOL;
+    SENSOR_SET_1 : BOOL;
+	SENSOR_SET_2 : BOOL;
+	SENSOR_SET_3 : BOOL;
+	SENSOR_SET_4 : BOOL;
+	SENSOR_SET_5 : BOOL;
+	SENSOR_SET_6 : BOOL;
+	
+	
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF    (SENSOR_1 AND SENSOR_2 AND SENSOR_3 AND SENSOR_4 AND SENSOR_5 AND SENSOR_6 AND SENSOR_7)
+OR	  (SENSOR_2 AND SENSOR_3 AND SENSOR_4 AND SENSOR_5 AND SENSOR_6 AND SENSOR_7)
+THEN  SENSOR_SET_1 := TRUE; 
+
+ELSIF (SENSOR_15 AND SENSOR_16 AND SENSOR_17 AND SENSOR_18 AND SENSOR_19 AND SENSOR_20 AND SENSOR_21)
+OR    (SENSOR_16 AND SENSOR_17 AND SENSOR_18 AND SENSOR_19 AND SENSOR_20 AND SENSOR_21)	   
+THEN  SENSOR_SET_2 := TRUE;	
+ 
+ELSIF (SENSOR_8 AND SENSOR_9 AND SENSOR_10 AND SENSOR_11 AND SENSOR_12 AND SENSOR_13 AND SENSOR_14)
+OR    (SENSOR_8 AND SENSOR_9 AND SENSOR_10 AND SENSOR_11 AND SENSOR_12 AND SENSOR_13 )
+THEN  SENSOR_SET_3 := TRUE;
+
+ELSIF (SENSOR_22 AND SENSOR_23 AND SENSOR_24 AND SENSOR_25 AND SENSOR_26 AND SENSOR_27 AND SENSOR_28)
+OR    (SENSOR_22 AND SENSOR_23 AND SENSOR_24 AND SENSOR_25 AND SENSOR_26 AND SENSOR_27 )
+THEN  SENSOR_SET_4 := TRUE;
+
+ELSIF NOT SENSOR_1 AND NOT SENSOR_2 AND NOT SENSOR_3 AND NOT SENSOR_4 AND NOT SENSOR_5 AND NOT SENSOR_6 AND NOT SENSOR_7 AND
+	 NOT SENSOR_8 AND NOT SENSOR_9 AND NOT SENSOR_10 AND NOT SENSOR_11 AND NOT SENSOR_12 AND NOT SENSOR_13 AND NOT SENSOR_14 AND
+	  NOT SENSOR_15 AND NOT SENSOR_16 AND NOT SENSOR_17 AND NOT SENSOR_18 AND NOT SENSOR_19 AND NOT SENSOR_20 AND NOT SENSOR_21 
+THEN  SENSOR_SET_5 := TRUE;
+	
+   
+ELSIF NOT SENSOR_8 AND NOT SENSOR_9 AND NOT SENSOR_10 AND NOT SENSOR_11 AND NOT SENSOR_12 AND NOT SENSOR_13 AND NOT SENSOR_14 AND
+	  NOT SENSOR_22 AND NOT SENSOR_23 AND NOT SENSOR_24 AND NOT SENSOR_25 AND NOT SENSOR_26 AND NOT SENSOR_27 AND NOT SENSOR_28 
+THEN  SENSOR_SET_6 := TRUE;
+END_IF
+
+(*IF CLAMP_1_WORK AND CLAMP_2_WORK AND CLAMP_3_WORK AND CLAMP_4_WORK AND CLAMP_5_WORK AND CLAMP_6_WORK
+THEN ALL_CLAMP_WORK := TRUE;
+END_IF
+IF CLAMP_1_HOME AND CLAMP_2_HOME AND CLAMP_3_HOME AND CLAMP_4_HOME AND CLAMP_5_HOME AND CLAMP_6_HOME
+THEN ALL_CLAMP_HOME := TRUE;
+END_IF   
+IF CLAMP_1_WORK 
+THEN CLAMP_SET_1 :=TRUE;
+END_IF
+IF CLAMP_1_HOME 
+THEN CLAMP_RESET_1 :=TRUE;
+END_IF
+
+IF CLAMP_2_WORK 
+THEN  CLAMP_SET_2 :=TRUE;
+END_IF
+
+IF CLAMP_2_HOME  
+THEN  CLAMP_RESET_2 :=TRUE;
+END_IF
+
+IF CLAMP_3_WORK 
+THEN  CLAMP_SET_3 :=TRUE;
+END_IF
+
+IF CLAMP_3_HOME 
+THEN  CLAMP_RESET_3 :=TRUE;
+END_IF
+IF CLAMP_4_WORK 
+THEN  CLAMP_SET_4 :=TRUE;
+END_IF
+IF CLAMP_4_HOME
+THEN  CLAMP_RESET_4 :=TRUE;
+END_IF
+IF CLAMP_5_WORK 
+THEN  CLAMP_SET_5 :=TRUE;
+END_IF
+IF CLAMP_5_HOME 
+THEN  CLAMP_RESET_5 :=TRUE;
+END_IF
+IF CLAMP_6_WORK 
+THEN  CLAMP_SET_6 :=TRUE;
+END_IF
+IF CLAMP_6_HOME 
+THEN  CLAMP_RESET_6 :=TRUE;
+END_IF*)
+
+(*IF CLAMP_1_HOME AND CLAMP_2_HOME AND CLAMP_3_HOME AND CLAMP_4_HOME AND CLAMP_5_HOME AND CLAMP_6_HOME
+THEN ALL_CLAMP_HOME := TRUE;
+   
+ELSIF CLAMP_1_HOME AND CLAMP_3_HOME AND CLAMP_5_HOME
+THEN CLAMP_RESET_1 :=TRUE;
+
+ELSIF CLAMP_2_HOME AND CLAMP_4_HOME AND CLAMP_6_HOME
+THEN  CLAMP_RESET_2 :=TRUE;
+
+ELSIF CLAMP_2_HOME AND CLAMP_4_HOME AND CLAMP_6_HOME
+THEN  CLAMP_RESET_2 :=TRUE;
+
+END_IF*)
+]]></ST>
+    </Implementation>
+    <LineIds Name="SENSOR">
+      <LineId Id="9" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="59" Count="1" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="65" Count="1" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="71" Count="2" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="76" Count="3" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="156" Count="1" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="158" Count="2" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="162" Count="2" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="166" Count="1" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="169" Count="1" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="172" Count="1" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="114" Count="10" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="112" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

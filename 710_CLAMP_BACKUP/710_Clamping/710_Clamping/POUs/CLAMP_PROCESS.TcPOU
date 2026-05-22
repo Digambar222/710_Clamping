@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="CLAMP_PROCESS" Id="{87e7d62e-2ee2-4fe3-a478-aacad87d07f7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK CLAMP_PROCESS
+VAR_INPUT
+    Home_Sensor       : BOOL;
+    Work_Sensor       : BOOL;
+    Auto_Mode         : BOOL;
+    Manual_Mode       : BOOL;
+
+    Auto_Clamp_CMD    : BOOL;
+    Auto_Unclamp_CMD  : BOOL;
+
+    Man_Extend_CMD    : BOOL;
+    Man_Retract_CMD   : BOOL;
+
+    Reset_Fault       : BOOL;
+
+END_VAR
+VAR_OUTPUT
+	ENABLE : BOOL;
+	 Extend_Valve      : BOOL;
+    Retract_Valve     : BOOL;
+
+END_VAR
+VAR
+  State             : INT := 0;
+  // Timers
+    T_Extend          : TON;
+    T_Retract         : TON;
+
+    // Alarms
+    Alarm_Extend_Timeout : BOOL;
+    Alarm_Retract_Timeout: BOOL;
+    Alarm_Sensor_Error   : BOOL;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// ----------------------------
+// Mode Selection
+// ----------------------------
+IF Auto_Mode THEN
+
+    CASE State OF
+
+        // HOME
+        0:
+            IF Auto_Clamp_CMD THEN
+                State := 1;
+            END_IF;
+
+        // MOVING TO WORK
+        1:
+            Extend_Valve := TRUE;
+
+            T_Extend(IN := TRUE, PT := T#2S);
+
+            IF Work_Sensor THEN
+                Extend_Valve := FALSE;
+                T_Extend(IN := FALSE);
+                State := 2;
+            ELSIF T_Extend.Q THEN
+                Alarm_Extend_Timeout := TRUE;
+                State := 99;
+            END_IF;
+			 // WORK
+        2:
+            IF Auto_Unclamp_CMD THEN
+                State := 3;
+            END_IF;
+
+        // MOVING TO HOME
+        3:
+            Retract_Valve := TRUE;
+
+            T_Retract(IN := TRUE, PT := T#2S);
+
+            IF Home_Sensor THEN
+                Retract_Valve := FALSE;
+                T_Retract(IN := FALSE);
+                State := 0;
+            ELSIF T_Retract.Q THEN
+                Alarm_Retract_Timeout := TRUE;
+                State := 99;
+            END_IF;
+
+        // FAULT
+        99:
+            Extend_Valve  := FALSE;
+            Retract_Valve := FALSE;
+
+            IF Reset_Fault THEN
+                Alarm_Extend_Timeout  := FALSE;
+                Alarm_Retract_Timeout := FALSE;
+                Alarm_Sensor_Error    := FALSE;
+                State := 0;
+            END_IF;
+ END_CASE;
+
+END_IF;
+// ----------------------------
+// Manual Mode
+// ----------------------------
+IF Manual_Mode AND NOT Auto_Mode THEN
+    State := 0;
+    // No state machine, direct control with interlock
+    IF Man_Extend_CMD AND NOT Work_Sensor THEN
+        Extend_Valve := TRUE;
+    ELSE
+        Extend_Valve := FALSE;
+    END_IF;
+
+    IF Man_Retract_CMD AND NOT Home_Sensor THEN
+        Retract_Valve := TRUE;
+    ELSE
+        Retract_Valve := FALSE;
+    END_IF;
+
+END_IF;
+
+
+// ----------------------------
+// Final Safety Interlock
+// ----------------------------
+IF Extend_Valve AND Retract_Valve THEN
+    Extend_Valve  := FALSE;
+    Retract_Valve := FALSE;
+END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="CLAMP_PROCESS">
+      <LineId Id="46" Count="25" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="73" Count="33" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="108" Count="26" />
+      <LineId Id="107" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
