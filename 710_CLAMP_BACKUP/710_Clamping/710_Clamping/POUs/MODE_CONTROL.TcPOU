@@ -89,7 +89,7 @@ END_VAR
 // Mode Selection
 // ---------------------------------------
 
-IF PowerON AND AutoSel  THEN
+IF PowerON AND AutoSel AND SafetyOK THEN
     AutoMode := TRUE;
     ManualMode := FALSE;
 END_IF;

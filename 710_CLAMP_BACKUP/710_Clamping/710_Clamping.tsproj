@@ -10,7 +10,7 @@
 		</System>
 		<Plc>
 			<Project GUID="{0D0A6EFC-AA77-4A29-BC19-0F0797A61D77}" Name="710_Clamping" PrjFilePath="710_Clamping\710_Clamping.plcproj" TmcFilePath="710_Clamping\710_Clamping.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="710_Clamping\710_Clamping.tmc" TmcHash="{D73DD231-CF40-DDDF-21F7-FC093639817D}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="710_Clamping\710_Clamping.tmc" TmcHash="{7E157803-1F16-4996-521B-423AD29C2738}">
 					<Name>710_Clamping Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>
