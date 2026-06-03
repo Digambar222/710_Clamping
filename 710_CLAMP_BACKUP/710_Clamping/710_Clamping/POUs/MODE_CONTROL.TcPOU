@@ -123,6 +123,10 @@ IF ManualMode AND NOT FaultLatch THEN
 
     // Manual Robot Jog
     RobotJog := JogRobotPB;
+	Sensor_1ST := FALSE;
+    Sensor_2ND := FALSE;
+	Sensor_3RD := FALSE;
+    Sensor_4TH := FALSE;
     RD_CLOSE_CMD :=FALSE;
 	RD_OPEN_CMD :=FALSE;
     // Manual Clamp Control
@@ -436,7 +440,9 @@ END_IF;
       <LineId Id="376" Count="0" />
       <LineId Id="23" Count="14" />
       <LineId Id="9" Count="0" />
-      <LineId Id="39" Count="8" />
+      <LineId Id="39" Count="7" />
+      <LineId Id="587" Count="3" />
+      <LineId Id="47" Count="0" />
       <LineId Id="399" Count="0" />
       <LineId Id="48" Count="10" />
       <LineId Id="60" Count="9" />

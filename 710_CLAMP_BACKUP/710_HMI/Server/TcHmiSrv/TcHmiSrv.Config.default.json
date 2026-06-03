@@ -3121,6 +3121,16 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.OP_Memory_DB.POWER_ON": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::OP_Memory_DB::POWER_ON",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
         "PLC1.OP_Memory_DB.SAFETY_OK": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -4129,6 +4139,7 @@
                 "PLC1.OP_Memory_DB.M_Rev_POSITION": 3,
                 "PLC1.OP_Memory_DB.M_Roll_Dr_Close": 3,
                 "PLC1.OP_Memory_DB.M_Roll_Dr_Open": 3,
+                "PLC1.OP_Memory_DB.POWER_ON": 3,
                 "PLC1.OP_Memory_DB.SAFETY_OK": 3,
                 "PLC1.Outputs.O_FAULT_LAMP": 3,
                 "PLC1.ROBOT.SAFETY_OK": 3,
